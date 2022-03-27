@@ -1,5 +1,26 @@
+function Shop(props) {
+  console.log(props);
+  const{title, description, price, image} = props.product
+  return (
+    <div className="col-md-3">
+      <div className="card p-5">
+        <img src={image} className="card-img-top" alt="Mens Clothing" />
+        <div className="card-body">
+          <h5 className="card-title">{title}</h5>
+          <h5 className="card-price">
+            <span>Price: </span>
+            ${price}
+          </h5>
+          <button href="#" className="btn btn-primary mt-3">
+            Add To Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 class Shopping extends React.Component {
-  constructor(props) {    
+  constructor(props) {
     super(props);
     this.state = {
       products: [],
@@ -53,12 +74,16 @@ class Shopping extends React.Component {
   }
 
   render() {
-    // console.log(this.props);
-    console.log(this.state);
+    const shop = this.state.products.map((product) => (
+      <Shop key={product.id} product={product} />
+    ));
     return (
-      <h1 className="text-center">
-        Enjoy yourself while coding. Its all simple
-      </h1>
+      <>
+        <h1 className="text-center">Shop Our Products</h1>
+        <div className="container">
+          <div className="row">{shop}</div>
+        </div>
+      </>
     );
   }
 }
