@@ -1,43 +1,105 @@
+const {
+  hashHistory,
+  Link,
+  Switch,
+  Route,
+  HashRouter: Router,
+  withRouter
+} = ReactRouterDOM;
+
 function Product(props) {
-  const { title, price, image } = props.product;
+  const { title, price, image,id } = props.product;
   return (
-      <div className="col-lg-4 col-md-6 col-sm-12">
-        <div className="card p-5">
-          <img src={image} className="card-img-top" alt={title} />
-          <div className="card-body">
+    <section className="col-lg-4 col-md-6 col-sm-12">
+      <section className="card p-5">
+        <img src={image} className="card-img-top" alt={title} />
+        <section className="card-body">
+          <Link className="mt-3 py-4 px-3" to={/products/ + id}>
             <h5 className="card-title">{title}</h5>
-            <h5 className="card-price">
-              <span>Price: </span>${price}
-            </h5>
-            <button
-              href="#"
-              className="btn btn-primary mt-3"
-              onClick={() => props.onAddToCart(props.product)}>
-              Add To Cart
-            </button>
-          </div>
-        </div>
-      </div>
+          </Link>
+          <h5 className="card-price">
+            <span>Price: </span>${price}
+          </h5>
+
+          <button
+            href="#"
+            className="btn btn-primary mt-3"
+            onClick={() => props.onAddToCart(props.product)}
+          >
+            Add To Cart
+          </button>
+        </section>
+      </section>
+    </section>
   );
 }
 
 function Shop(props) {
-  const { products, onAddToCart } = props;
-  const shop = products.map((product) => (
-    <Product key={product.id} product={product} onAddToCart={onAddToCart} />
-  ));
+  return props.products.map((product) => (
+      <Product
+        key={product.id}
+        product={product}
+        onAddToCart={props.onAddToCart}
+      />
+    ));
+}
+
+class ProductDetails extends React.Component {
+  async getProductById (id) {
+    let product={}
+    try {
+      const response = await fetch("/data/products.json");
+       const products = await response.json();
+       product = products.find(p => p.id == id);
+      
+    } catch (error) {
+      console.log(error);
+    }
+    return product;
+  }
+
+  
+render() {
+  const { id } = this.props.match.params;
+  this.getProductById(id);
+
   return (
-    <div className="col-8">
-      <div className="row">{shop}</div>
-    </div>
+    <>
+      <h1>Product Details</h1>
+      
+    </>
+    // <section className="col-12">
+    //     <article className="row">
+    //       <section className="col-4">
+    //         <img src={image} className="card-img" alt={title} />
+    //       </section>
+    //       <section className="col-7">
+    //         <h3>{title}</h3>
+    //         <p>{description}</p>
+    //         {/* <h5>Ratings: {rating.rate}</h5> */}
+    //         <h5>Price: ${price}</h5>
+    //         <button
+    //           href="#"
+    //           className="btn btn-primary mt-3"
+    //           onClick={() => props.onAddToCart(props.product)}
+    //         >
+    //           Add To Cart
+    //         </button>
+    //       </section>
+    //     </article>
+    //   </section>
   );
 }
+}
+
+ProductDetails = withRouter(ProductDetails);
+
 
 function Wallet(props) {
   const { balance = 0, owner = {} } = props.wallet;
   const { name, phoneNumber, email, address } = owner;
   return (
-    <>
+    <aside>
       <div id="wallet">
         <h1>Wallet</h1>
         <div>
@@ -48,25 +110,26 @@ function Wallet(props) {
           <p>Address: {address}</p>
         </div>
       </div>
-    </>
+    </aside>
   );
 }
 
 function CartItem(props) {
-  const{item} = props;
+  const { item } = props;
   return (
     <div>
-          <div>{item.title}</div>
-          <button onClick={() => onAddToCart(item)}>+</button>
-          <div>
-            {item.cqty} * ${item.price}
-          </div>
-        </div>
-  )
+      <div>{item.title}</div>
+      <button onClick={() => onAddToCart(item)}>+</button>
+      <div>
+        {item.cqty} * ${item.price}
+        <Link to="/cart">View Cart</Link>
+      </div>
+    </div>
+  );
 }
 
 function Cart(props) {
-  const { cart } = props;
+  const { cart =[] } = props;
   return (
     <aside>
       <h2>Cart Items</h2>
@@ -134,30 +197,32 @@ class Shopping extends React.Component {
   }
 
   handleAddToCart = (product) => {
-    if(product.qty >= 1) {
+    if (product.qty >= 1) {
       const exist = this.state.cart.find((item) => item.id === product.id);
       if (exist) {
         alert(" Product already in Cart");
-      }else {
-        let cartItem = { ...product, ...{ cqty: 1 }};
+      } else {
+        let cartItem = { ...product, cqty: 1 };
         let cart = [...this.state.cart, cartItem];
         this.setState({
-        cart: cart
-      })
+          cart: cart,
+        });
       }
     }
   };
 
   render() {
+    
     return (
       <>
         <div className="container-fluid">
-          <h1 className="text-center">Shop Our Products</h1>
           <div className="row">
-            <Shop
-              products={this.state.products}
-              onAddToCart={this.handleAddToCart}
-            />
+                  <div className="col-8">
+                    <h1 className="text-center">Shop Our Products</h1>
+                    <div className="row">
+                      <Shop products={this.state.products} onAddToCart={this.handleAddToCart} />
+                    </div>
+                  </div>
             <div className="col-4">
               <Wallet wallet={this.state.wallet} />
               <Cart cart={this.state.cart} />
@@ -169,4 +234,21 @@ class Shopping extends React.Component {
   }
 }
 
-ReactDOM.render(<Shopping />, document.getElementById("shopping"));
+function App() {
+  return (
+    <Router>
+      <Switch>
+        {/* Homepage route */}
+        <Route path="/" exact component={Shopping}></Route>
+        <Route path="/products/:id" className="row">
+          <ProductDetails />
+        </Route>
+        <Route path="/cart" >
+          <Cart />
+        </Route>
+      </Switch>
+    </Router>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("shopping"));
