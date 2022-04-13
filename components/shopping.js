@@ -401,7 +401,6 @@ class App extends React.Component {
   handleClearCart() {
     let cart = []
     this.setState({ cart: cart });
-    // alert('Clear cart')
   }
 
 
