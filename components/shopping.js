@@ -7,8 +7,58 @@ const {
   withRouter,
 } = ReactRouterDOM;
 
+function Navbar(props) {
+  const { cart } = props;
+  return (
+    <nav className="navbar navbar-expand-lg navbar-light bg-light bg-primary">
+      <div className="container-fluid">
+        <a className="navbar-brand" href="#">
+          Daavi and Daughter Shop
+        </a>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav">
+            <li className="nav-item">
+              <a className="nav-link active" aria-current="page" href="#">
+                Home
+              </a>
+            </li>
+            <li className="nav-item ">
+              <a className="nav-link " href="#wallet">
+                Wallet
+              </a>
+            </li>
+            <li>
+              <Link className="nav-link mr-auto" to="/cart">
+                <button type="button" class="btn btn-primary position-relative">
+                  <i className="bi bi-cart4"></i>
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {cart.length}
+                    
+                  </span>
+                </button>
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
 function Product(props) {
-  const { title, price, image, id, qty} = props.product;
+  const { title, price, image, id, qty } = props.product;
   return (
     <section className="col-lg-4 col-md-6 col-sm-12">
       <section className="card p-5">
@@ -170,7 +220,7 @@ function CartItem(props) {
         <p>${item.price * item.cqty}</p>
       </div>
       <div className="col-2 p-3">
-        <p onClick={() => onRemove((item))}>
+        <p onClick={() => onRemove(item)}>
           <i class="bi bi-cart-x"></i>
         </p>
       </div>
@@ -180,7 +230,7 @@ function CartItem(props) {
 
 /**
  * It takes an array of cart items and display each of them individually
- * @param {object} props 
+ * @param {object} props
  * @prop {array} cart - Array of cart items
  * @prop {function} onIncrease - Function to call when to increase product quantity in cart
  * @prop {function} onDecrease - Function to call when to decrease product quantity in cart
@@ -329,7 +379,7 @@ class App extends React.Component {
     };
 
     this.handleAddToCart = this.handleAddToCart.bind(this);
-    this.handleIncrease = this.handleIncrease.bind(this)
+    this.handleIncrease = this.handleIncrease.bind(this);
     this.handleDecrease = this.handleDecrease.bind(this);
     this.handleRemove = this.handleRemove.bind(this);
     this.handleClearCart = this.handleClearCart.bind(this);
@@ -366,8 +416,8 @@ class App extends React.Component {
   }
 
   /**
-   * 
-   * @param {object} product 
+   *
+   * @param {object} product
    */
   handleIncrease(product) {
     if (product.qty >= 1) {
@@ -393,20 +443,20 @@ class App extends React.Component {
     }
   }
 
-  handleRemove (product) {
-    let cart = this.state.cart.filter(item => item.id !== product.id)
+  handleRemove(product) {
+    let cart = this.state.cart.filter((item) => item.id !== product.id);
     this.setState({ cart: cart });
   }
 
   handleClearCart() {
-    let cart = []
+    let cart = [];
     this.setState({ cart: cart });
   }
-
 
   render() {
     return (
       <Router>
+        <Navbar cart={this.state.cart} />
         <Switch>
           {/* Homepage route */}
           <Route path="/" exact>
