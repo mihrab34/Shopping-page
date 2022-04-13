@@ -8,7 +8,7 @@ const {
 } = ReactRouterDOM;
 
 function Product(props) {
-  const { title, price, image, id } = props.product;
+  const { title, price, image, id, qty} = props.product;
   return (
     <section className="col-lg-4 col-md-6 col-sm-12">
       <section className="card p-5">
@@ -20,6 +20,13 @@ function Product(props) {
           <h5 className="card-price">
             <span>Price: </span>${price}
           </h5>
+          <h6>
+            {qty >= 1 ? (
+              <p className="badge bg-success">Available</p>
+            ) : (
+              <p className="badge bg-danger">Out of stock</p>
+            )}
+          </h6>
           <AddToCart onAddToCart={props.onAddToCart} />
         </section>
       </section>
@@ -110,7 +117,7 @@ class ProductDetails extends React.Component {
                 <p className="badge bg-danger">Out of stock</p>
               )}
             </h6>
-            <AddToCart />
+            <AddToCart onAddToCart={this.props.onAddToCart} />
           </section>
         </article>
       </section>
@@ -140,34 +147,48 @@ function Wallet(props) {
 }
 
 function CartItem(props) {
-  const { item, onIncrease, onDecrease } = props;
+  const { item, onIncrease, onDecrease, onRemove } = props;
   return (
     <div className="row">
-      <div className="col-3  p-3">
+      <div className="col-4  p-3">
         <div>{item.title}</div>
       </div>
-      <div className="col-3  p-3">
+      <div className="col-2  p-3">
         <p>${item.price}</p>
       </div>
 
-      <div className="col-3  p-3">
-        <span className="pt-3">
+      <div className="col-2  p-3">
+        <span className="">
           <button onClick={() => onDecrease(item)}>-</button>
         </span>
-        <span className="p-3">{item.cqty}</span>
+        <span className="">{item.cqty}</span>
         <span className="pt-3">
           <button onClick={() => onIncrease(item)}>+</button>
         </span>
       </div>
-      <div className="col-3  p-3">
+      <div className="col-2  p-3">
         <p>${item.price * item.cqty}</p>
+      </div>
+      <div className="col-2 p-3">
+        <p onClick={() => onRemove((item))}>
+          <i class="bi bi-cart-x"></i>
+        </p>
       </div>
     </div>
   );
 }
 
+/**
+ * It takes an array of cart items and display each of them individually
+ * @param {object} props 
+ * @prop {array} cart - Array of cart items
+ * @prop {function} onIncrease - Function to call when to increase product quantity in cart
+ * @prop {function} onDecrease - Function to call when to decrease product quantity in cart
+ * @prop {function} onClearCart - Function to call when to clear all cart items
+ * @returns cartItem Component
+ */
 function Cart(props) {
-  const { cart = [], onIncrease, onDecrease } = props;
+  const { cart = [], onIncrease, onDecrease, onRemove, onClearCart } = props;
   return (
     <aside className="row">
       <h2>Cart Items</h2>
@@ -175,18 +196,29 @@ function Cart(props) {
         <div>Cart is empty</div>
       ) : (
         <div className="row">
-          <Link to="/cart" className="p-3">View Cart</Link>
-          <div className="col-3 border">
+          <div className="d-flex align-center justify-content-between">
+            <Link to="/cart" className="p-3">
+              View Cart
+            </Link>
+            <a onClick={onClearCart} className="p-3">
+              Clear Cart
+            </a>
+          </div>
+
+          <div className="col-4 border">
             <p>PRODUCT</p>
           </div>
-          <div className="col-3 border">
+          <div className="col-2 border">
             <p>PRICE</p>
           </div>
-          <div className="col-3 border">
+          <div className="col-2 border">
             <p>QUANTITY</p>
           </div>
-          <div className="col-3 border">
+          <div className="col-2 border">
             <p>SUBTOTAL</p>
+          </div>
+          <div className="col-2 border">
+            <p></p>
           </div>
         </div>
       )}
@@ -196,6 +228,7 @@ function Cart(props) {
           item={item}
           onIncrease={onIncrease}
           onDecrease={onDecrease}
+          onRemove={onRemove}
         />
       ))}
     </aside>
@@ -208,7 +241,6 @@ class Shopping extends React.Component {
     this.state = {
       products: [],
       wallet: {},
-
     };
   }
 
@@ -275,8 +307,10 @@ class Shopping extends React.Component {
               <Wallet wallet={this.state.wallet} />
               <Cart
                 cart={this.props.cart}
-                onIncrease={this.props.onIncrease}
+                onIncrease={this.props.onAddToCart}
                 onDecrease={this.props.onDecrease}
+                onRemove={this.props.onRemove}
+                onClearCart={this.props.onClearCart}
               />
             </div>
           </div>
@@ -295,11 +329,15 @@ class App extends React.Component {
     };
 
     this.handleAddToCart = this.handleAddToCart.bind(this);
+    this.handleIncrease = this.handleIncrease.bind(this)
+    this.handleDecrease = this.handleDecrease.bind(this);
+    this.handleRemove = this.handleRemove.bind(this);
+    this.handleClearCart = this.handleClearCart.bind(this);
   }
   /**
    * @param {object} product
    * Add a new item to the cart
-   * 
+   *
    *  Steps
    * 1. Check if product quantity is greater than zero(0)
    * 2. If available, check if it already exist in the cart
@@ -313,7 +351,10 @@ class App extends React.Component {
     if (product.qty >= 1) {
       const exist = this.state.cart.find((item) => item.id === product.id);
       if (exist) {
-        alert(" Product already in Cart");
+        let cart = this.state.cart.map((item) =>
+          item.id === product.id ? { ...exist, cqty: exist.cqty + 1 } : item
+        );
+        this.setState({ cart: cart });
       } else {
         let cartItem = { ...product, cqty: 1 };
         let cart = [...this.state.cart, cartItem];
@@ -324,13 +365,45 @@ class App extends React.Component {
     }
   }
 
-  handleIncrease(item) {
-    alert("increasing quantity");
+  /**
+   * 
+   * @param {object} product 
+   */
+  handleIncrease(product) {
+    if (product.qty >= 1) {
+      const exist = this.state.cart.find((item) => item.id === product.id);
+      if (exist) {
+        let cart = this.state.cart.map((item) =>
+          item.id === product.id ? { ...exist, cqty: exist.cqty + 1 } : item
+        );
+        this.setState({ cart: cart });
+      }
+    }
   }
 
-  handleDecrease(item) {
-    alert("decreasing quantity");
+  handleDecrease(product) {
+    if (product.cqty >= 1) {
+      const exist = this.state.cart.find((item) => item.id === product.id);
+      if (exist) {
+        let cart = this.state.cart.map((item) =>
+          item.id === product.id ? { ...exist, cqty: exist.cqty - 1 } : item
+        );
+        this.setState({ cart: cart });
+      }
+    }
   }
+
+  handleRemove (product) {
+    let cart = this.state.cart.filter(item => item.id !== product.id)
+    this.setState({ cart: cart });
+  }
+
+  handleClearCart() {
+    let cart = []
+    this.setState({ cart: cart });
+    // alert('Clear cart')
+  }
+
 
   render() {
     return (
@@ -341,15 +414,22 @@ class App extends React.Component {
             <Shopping
               cart={this.state.cart}
               onAddToCart={this.handleAddToCart}
-              onIncrease={this.handleIncrease}
               onDecrease={this.handleDecrease}
+              onRemove={this.handleRemove}
+              onClearCart={this.handleClearCart}
             />
           </Route>
           <Route path="/products/:id" className="row">
-            <ProductDetails />
+            <ProductDetails onAddToCart={this.handleAddToCart} />
           </Route>
           <Route path="/cart">
-            <Cart />
+            <Cart
+              cart={this.state.cart}
+              onIncrease={this.handleIncrease}
+              onDecrease={this.handleDecrease}
+              onRemove={this.handleRemove}
+              onClearCart={this.handleClearCart}
+            />
           </Route>
         </Switch>
       </Router>
