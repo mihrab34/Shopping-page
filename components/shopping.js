@@ -28,7 +28,7 @@ function Navbar(props) {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav">
+          <ul className="navbar-nav ">
             <li className="nav-item">
               <a className="nav-link active" aria-current="page" href="#">
                 Home
@@ -39,19 +39,18 @@ function Navbar(props) {
                 Wallet
               </a>
             </li>
-            <li>
-              <Link className="nav-link mr-auto" to="/cart">
-                <button type="button" class="btn btn-primary position-relative">
-                  <i className="bi bi-cart4"></i>
-                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {cart.length}
-                    
-                  </span>
-                </button>
-              </Link>
-            </li>
           </ul>
         </div>
+        <Link className="p-2" to="/cart">
+          <button type="button" className="btn btn-primary position-relative">
+            <i className="bi bi-cart4"></i>
+            {cart.length ? (
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {cart.length}
+              </span>
+            ) : null}
+          </button>
+        </Link>
       </div>
     </nav>
   );
@@ -92,6 +91,120 @@ function Shop(props) {
       onAddToCart={() => props.onAddToCart(product)}
     />
   ));
+}
+
+class AddProduct extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      title: "",
+      qty: 0,
+      price: 0,
+      category:"",
+      description: ''
+    };
+  }
+
+  handleChange = (event) => {
+    // console.log(event)
+    const target = event.target;
+    const value = target.type === "text" ? target.value : target.value;
+    const name = target.name;
+    this.setState({
+      [name] : value
+    });
+  };
+
+  handleSave = (event) => {
+    event.preventDefault();
+    console.log(this.state)
+  }
+
+  render() {
+    return (
+      <>
+        <h1 className="text-center">Add New Product</h1>
+        <form className="container">
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="name"
+              name="title"
+              onChange={this.handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="quantity" className="form-label">
+              Quantity
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="quantity"
+              name="qty"
+              // value={this.state.qty}
+              onChange={this.handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="price">
+              Price
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="price"
+              name="price"
+              // value={this.state.price}
+              onChange={this.handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="price">
+              Category
+            </label>
+            <select
+              className="form-select"
+              aria-label="Default select example"
+              onChange={this.handleChange}
+              name="category"
+              // value={this.state.category}
+            >
+              <option value="0">--Choose One--</option>
+              <option value="1">One</option>
+              <option value="2">Two</option>
+              <option value="3">Three</option>
+            </select>
+          </div>
+          <div className="mb-3">
+            <label htmlFor="description" className="form-label">
+              Description
+            </label>
+            <textarea
+              className="form-control"
+              id="description"
+              rows="3"
+              name="description"
+              // value={this.state.description}
+              onChange={this.handleChange}
+            ></textarea>
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            onClick={this.handleSave}
+          >
+            Save
+          </button>
+        </form>
+      </>
+    );
+  }
 }
 
 function AddToCart(props) {
@@ -479,6 +592,9 @@ class App extends React.Component {
               onRemove={this.handleRemove}
               onClearCart={this.handleClearCart}
             />
+          </Route>
+          <Route path="/product/add">
+            <AddProduct />
           </Route>
         </Switch>
       </Router>
