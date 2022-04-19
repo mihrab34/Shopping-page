@@ -35,9 +35,9 @@ function Navbar(props) {
               </a>
             </li>
             <li className="nav-item ">
-              <a className="nav-link " href="#wallet">
-                Wallet
-              </a>
+              <Link className="nav-link " to="product/add">
+                Add Product
+              </Link>
             </li>
           </ul>
         </div>
@@ -107,18 +107,31 @@ class AddProduct extends React.Component {
   }
 
   handleChange = (event) => {
-    // console.log(event)
     const target = event.target;
-    const value = target.type === "text" ? target.value : target.value;
+    const value = target.value;
     const name = target.name;
     this.setState({
       [name] : value
     });
   };
 
+  /**
+   * 
+   * @param {*} event 
+   * when button is clicked, push state to product Array
+   * Then save product Array to local state
+   */
   handleSave = (event) => {
     event.preventDefault();
-    console.log(this.state)
+    const products = JSON.parse(localStorage.getItem("products")) || []
+    products.push(this.state)
+    localStorage.setItem("products", JSON.stringify(products));
+  }
+
+  componentDidMount(){
+    const items = JSON.parse(localStorage.getItem("products"));
+    console.log(items);
+    console.log(typeof items);
   }
 
   render() {
@@ -176,9 +189,9 @@ class AddProduct extends React.Component {
               // value={this.state.category}
             >
               <option value="0">--Choose One--</option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
+              <option value="1">Clothing</option>
+              <option value="2">Accessories</option>
+              <option value="3">Technology</option>
             </select>
           </div>
           <div className="mb-3">
