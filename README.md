@@ -7,6 +7,10 @@ A shopping application that shows products and allows a buyer to select as many 
 purchase. Pay for selected products with the balance on thier wallet (pre loaded with 1900).
 Purchased products are dropped in the buyer's basket.
 
+## Live Preview
+
+https://shopping-page-two.vercel.app/#/
+
 ## Available Routes
 `/` - HomePage
 
